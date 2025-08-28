@@ -1,17 +1,21 @@
 import db
+import db.domain.short_wall_id as db_short_wall_id
 import utils
 
 def create_wall(title, create_ip) -> utils.ResultDTO:
-    id = utils.gen_hash(4)
+    wall_id = utils.gen_uuid()
     
     try:
         conn = db.create_connection()
         conn.execute('''
             INSERT INTO wall (id, title, create_ip) VALUES (?, ?, ?)
-        ''', (id, title, create_ip))
+        ''', (wall_id, title, create_ip))
         conn.commit()
         db.close_connection(conn)
-        return utils.ResultDTO(code=201, message='Wall created', data={'wall_id': id}, result=True)
+
+        short_info = db_short_wall_id.create_short_id(wall_id)
+
+        return utils.ResultDTO(code=201, message='Wall created', data={'wall_id': wall_id, 'short_id': short_info.data['short_id']}, result=True)
     except Exception as e:
         return utils.ResultDTO(code=500, message='Wall creation failed', data={'detail': str(e)}, result=False)
 

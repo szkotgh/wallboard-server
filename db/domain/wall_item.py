@@ -1,25 +1,25 @@
 import db
-import db.wall
+import db.domain.wall as db_wall
 import utils
 
 def create_wall_item(wall_id, title, message, create_ip):
     if not wall_id or not title or not message or not create_ip:
         return utils.ResultDTO(code=400, message='Require parameters missing', result=False)
 
-    if not db.wall.get_info(wall_id).result:
+    if not db_wall.get_info(wall_id).result:
         return utils.ResultDTO(code=404, message='Invalid wall_id', result=False)
 
-    id = utils.gen_hash(8)
-    # try:
-    conn = db.create_connection()
-    conn.execute('''
-        INSERT INTO wall_item (id, wall_id, title, message, create_ip) VALUES (?, ?, ?, ?, ?)
-    ''', (id, wall_id, title, message, create_ip))
-    conn.commit()
-    db.close_connection(conn)
-    return utils.ResultDTO(code=201, message='Wall item created', data={'item_id': id}, result=True)
-    # except Exception as e:
-    #     return utils.ResultDTO(code=500, message='Wall item creation failed', data={'detail': str(e)}, result=False)
+    id = utils.gen_uuid()
+    try:
+        conn = db.create_connection()
+        conn.execute('''
+            INSERT INTO wall_item (id, wall_id, title, message, create_ip) VALUES (?, ?, ?, ?, ?)
+        ''', (id, wall_id, title, message, create_ip))
+        conn.commit()
+        db.close_connection(conn)
+        return utils.ResultDTO(code=201, message='Wall item created', data={'item_id': id}, result=True)
+    except Exception as e:
+        return utils.ResultDTO(code=500, message='Wall item creation failed', data={'detail': str(e)}, result=False)
     
 def get_info(wall_item_id):
     if not wall_item_id:
@@ -44,7 +44,7 @@ def get_list_info(wall_id):
     if not wall_id:
         return utils.ResultDTO(code=400, message='Require parameters missing', result=False)
 
-    if not db.wall.get_info(wall_id).result:
+    if not db_wall.get_info(wall_id).result:
         return utils.ResultDTO(code=404, message='Invalid wall_id', result=False)
 
     try:

@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS wall (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    create_ip TEXT NOT NULL,
+    create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS wall_item (
+    id TEXT PRIMARY KEY,
+    wall_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    create_ip TEXT NOT NULL,
+    create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (wall_id) REFERENCES wall (id)
+);
+
+CREATE TABLE IF NOT EXISTS short_wall_id (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    wall_id TEXT NOT NULL,
+    short_id TEXT NOT NULL,
+    FOREIGN KEY (wall_id) REFERENCES wall (id)
+);
