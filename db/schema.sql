@@ -12,12 +12,12 @@ CREATE TABLE IF NOT EXISTS wall_item (
     message TEXT NOT NULL,
     create_ip TEXT NOT NULL,
     create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (wall_id) REFERENCES wall (id)
+    FOREIGN KEY (wall_id) REFERENCES wall (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS short_wall_id (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     wall_id TEXT NOT NULL,
     short_id TEXT NOT NULL,
-    FOREIGN KEY (wall_id) REFERENCES wall (id)
+    FOREIGN KEY (wall_id) REFERENCES wall (id) ON DELETE CASCADE
 );

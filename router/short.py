@@ -1,11 +1,11 @@
 from flask import Blueprint, redirect, url_for
-import db.wall
+import db.domain.wall as db_wall
 
 short_bp = Blueprint('short', __name__, url_prefix='/s')
 
 @short_bp.route('/<code>', methods=['GET'])
 def resolve_short(code):
-    info = db.wall.get_info_by_short_code(code)
+    info = db_wall.get_info_by_short_code(code)
     if not info.result:
         # 404 JSON과 일관되게 처리하려면 앱의 에러핸들러에 맡김
         return info.to_response()
