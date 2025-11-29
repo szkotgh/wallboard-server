@@ -26,8 +26,10 @@ def delete_wall(wall_id) -> utils.ResultDTO:
         if wall_info.result is False:
             return wall_info
         
-        # Delete Wall
+        # Delete Wall with CASCADE enabled
         conn = db.create_connection()
+        # Enable foreign key constraints
+        conn.execute('PRAGMA foreign_keys = ON')
         conn.execute('''
             DELETE FROM wall WHERE id = ?
         ''', (wall_id,))
@@ -46,9 +48,31 @@ def get_info(wall_id) -> utils.ResultDTO:
         db.close_connection(conn)
         if wall:
             wall_info = dict(wall)
+            # 원본 ID는 외부로 노출하지 않음
             wall_info.pop('id')
+            # IP 주소 마스킹 처리
+            if 'create_ip' in wall_info:
+                wall_info['create_ip'] = utils.mask_ip_address(wall_info['create_ip'])
             return utils.ResultDTO(code=200, message='Wall info query successful', data=wall_info, result=True)
         else:
             return utils.ResultDTO(code=404, message='Wall not found', result=False)
+    except Exception as e:
+        return utils.ResultDTO(code=500, message='Internal server error', data={'error': str(e)}, result=False)
+
+def get_info_by_short_id(short_id) -> utils.ResultDTO:
+    """short_id로 wall 정보를 조회합니다. 원본 ID는 노출하지 않습니다."""
+    try:
+        conn = db.create_connection()
+        # short_id로 wall_id 조회
+        short_wall = conn.execute('''
+            SELECT wall_id FROM short_wall_id WHERE short_id = ?
+        ''', (short_id,)).fetchone()
+        db.close_connection(conn)
+        
+        if not short_wall:
+            return utils.ResultDTO(code=404, message='Invalid short ID', result=False)
+        
+        # wall 정보 조회 (원본 ID는 노출하지 않음)
+        return get_info(short_wall['wall_id'])
     except Exception as e:
         return utils.ResultDTO(code=500, message='Internal server error', data={'error': str(e)}, result=False)

@@ -34,9 +34,14 @@ def get_info(wall_item_id):
         db.close_connection(conn)
 
         if not row:
-            return utils.ResultDTO(code=404, message='Wall item not found', result=False)
+            return utils.ResultDTO(code=404, message='Invalid wall_item_id', result=False)
 
-        return utils.ResultDTO(code=200, message='Wall item found', data=dict(row), result=True)
+        item_data = dict(row)
+        item_data.pop('wall_id')
+        if 'create_ip' in item_data:
+            item_data['create_ip'] = utils.mask_ip_address(item_data['create_ip'])
+
+        return utils.ResultDTO(code=200, message='Wall item found', data=item_data, result=True)
     except Exception as e:
         return utils.ResultDTO(code=500, message='Wall item retrieval failed', data={'detail': str(e)}, result=False)
     
@@ -58,8 +63,15 @@ def get_list_info(wall_id):
         if not rows:
             return utils.ResultDTO(code=404, message='No wall items found', result=False)
         
-        # Convert each row to a dictionary for JSON serialization
-        items = [dict(row) for row in rows]
+        # Convert each row to a dictionary for JSON serialization and mask IP addresses
+        items = []
+        for row in rows:
+            item_data = dict(row)
+            item_data.pop('wall_id')
+            if 'create_ip' in item_data:
+                item_data['create_ip'] = utils.mask_ip_address(item_data['create_ip'])
+            items.append(item_data)
+        
         items.reverse()
         
         return utils.ResultDTO(code=200, message='Wall items found', data=items, result=True)
